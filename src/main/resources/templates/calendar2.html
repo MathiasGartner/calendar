@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+    <head>
+    	<!-- DevExtreme dependencies -->
+		<script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.3.min.js"></script>
+		<!-- A DevExtreme library -->
+		<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.all.js"></script>
+		<!--<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.web.js"></script>-->
+		<!--<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.viz.js"></script>-->
+		<!--<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.viz-web.js"></script>-->
+		<!--<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.mobile.js"></script>-->
+		<!-- Styles -->
+		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/16.1.14/css/dx.common.css" />
+		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/16.1.14/css/dx.light.css" />
+		
+		<script>
+			$(function () {
+	    		$("#buttonContainer").dxButton({
+			        text: "Click me!",
+	    		    onClick: function () {
+	            		alert("Hello world!");
+		        	}
+		    	});
+			});
+			$(function() {
+			    $("#schCalendar").dxScheduler({
+			        dataSource: [{
+			            text: "Website Re-Design Plan",
+			            startDate: new Date(2016, 4, 25, 9, 30),
+			            endDate: new Date(2016, 4, 25, 11, 30)
+			        }, {
+			            text: "Book Flights to San Fran for Sales Trip",
+			            startDate: new Date(2016, 4, 25, 12, 0),
+			            endDate: new Date(2016, 4, 25, 13, 0)
+			        }, 
+			        // ...
+			        ],
+			        currentDate: new Date(2016, 4, 25),
+			        startDayHour: 8,
+			        endDayHour: 19,
+			        cellDuration: 60,
+			        firstDayOfWeek: 1
+			    });
+			});
+		</script>
+		
+        <title>calendar</title>
+    </head>
+    <body>
+    	<form th:action="@{/logout}" method="post">
+            <input type="submit" value="Sign Out"/>
+        </form>
+        <div id="schCalendar"></div>
+        <br />
+        <div id="buttonContainer"></div>
+    </body>
+</html>

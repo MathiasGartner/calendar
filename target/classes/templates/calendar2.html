@@ -14,34 +14,247 @@
 		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/16.1.14/css/dx.common.css" />
 		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/16.1.14/css/dx.light.css" />
 		
-		<script>
-			$(function () {
-	    		$("#buttonContainer").dxButton({
-			        text: "Click me!",
-	    		    onClick: function () {
-	            		alert("Hello world!");
-		        	}
-		    	});
+		<script type="text/javascript">
+		    
+			function showToast(event, value, type) {
+		        DevExpress.ui.notify(event + " \"" + value + "\"", type, 1400);
+	   		};
+		    
+			var projectList;
+			$.ajax({
+			    async: false,
+			    url: 'data/projects',
+			    success: function(data) {
+			        projectList = data;
+			    }
 			});
+			
+			var activityTypeList;
+			$.ajax({
+			    async: false,
+			    url: 'data/activityTypes',
+			    success: function(data) {
+			        activityTypeList = data;
+			    }
+			});
+						
+			function loadAppointmentsForWeek(week) {
+				var appointments;
+				$.ajax({
+			    	async: false,
+			   		url: 'calendar/loadAppointmentsForWeek/' + week.toISOString(),
+			    	success: function(data) {
+			        	appointments = data;
+			    	}
+				});
+		        return appointments;
+		    };
+		    
+		    function insertAppointment(appointmentData) {
+		    	alert(appointmentData.startDate);
+				$.ajax({
+					async: false,
+					type: 'POST',
+			   		url: 'calendar/appointment/insert',
+			   		data: JSON.stringify(appointmentData),
+			    	success: function(data) {
+			    	},
+					contentType:"application/json; charset=utf-8",
+					dataType:"json"
+				});
+		    };
+		    
+		    function updateAppointment(key, appointmentData) {
+				$.ajax({
+				    async: false,
+					type: 'POST',
+			   		url: 'calendar/appointment/update/' + key,
+			   		data: JSON.stringify(appointmentData),
+			    	success: function(data) {
+			    	},
+					contentType:"application/json; charset=utf-8",
+					dataType:"json"
+				});
+		    };
+		    
+		    function deleteAppointment(key) {
+				$.ajax({
+			    	async: false,
+			   		url: 'calendar/appointment/delete/' + key,
+			    	success: function(data) {
+			    	}
+				});
+		    };
+		    
+		    function getProjectById(id) {
+				var project;
+				$.ajax({
+				    async: false,
+				    url: 'data/project/' + id,
+				    success: function(data) {
+				        project = data;
+				    }
+				});
+		        return project;
+		    };
+		    
+		    function getActivityTypeById(id) {
+				var activityType;
+				$.ajax({
+				    async: false,
+				    url: 'data/activityType/' + id,
+				    success: function(data) {
+				        activityType = data;
+				    }
+				});
+		        return activityType;
+		    };
+		    
+		    function getAppointmentById(id) {
+				var appointment;
+				$.ajax({
+				    async: false,
+				    url: 'data/appointment/' + id,
+				    success: function(data) {
+				    	appointment = data;
+				    }
+				});
+		        return appointment;
+		    };
+		    
+			var ds = new DevExpress.data.DataSource({			        	 
+	            load: function(loadOptions) {
+	            	var d;
+	            	if (loadOptions !== undefined && loadOptions.dxScheduler !== undefined && loadOptions.dxScheduler.startDate !== undefined)
+            		{
+		                return loadAppointmentsForWeek(loadOptions.dxScheduler.startDate);
+            		}
+	            	else if (loadOptions)
+            		{
+		                return loadAppointmentsForWeek(loadOptions);
+            		}
+	            	else {
+	            		return null;
+	            	}
+	            },			         
+	            byKey: function(key) {
+	                return getAppointmentById(key);
+	            },			         
+	            insert: function(values) {
+	            	insertAppointment(values);
+	                ds.reload();
+	            },			         
+	            update: function(key, values) {
+	            	updateAppointment(key.id, values);
+	                ds.reload();
+	            },			         
+	            remove: function(key) {
+	            	deleteAppointment(key.id);
+	                ds.reload();
+	            }			         
+	        });
+			
+			var scheduler;		
 			$(function() {
-			    $("#schCalendar").dxScheduler({
-			        dataSource: [{
-			            text: "Website Re-Design Plan",
-			            startDate: new Date(2016, 4, 25, 9, 30),
-			            endDate: new Date(2016, 4, 25, 11, 30)
-			        }, {
-			            text: "Book Flights to San Fran for Sales Trip",
-			            startDate: new Date(2016, 4, 25, 12, 0),
-			            endDate: new Date(2016, 4, 25, 13, 0)
-			        }, 
-			        // ...
-			        ],
-			        currentDate: new Date(2016, 4, 25),
+			    scheduler = $("#schCalendar").dxScheduler({
+			        dataSource: ds,
+			        currentDate: new Date(),
 			        startDayHour: 8,
-			        endDayHour: 19,
-			        cellDuration: 60,
-			        firstDayOfWeek: 1
-			    });
+			        endDayHour: 20,
+			        cellDuration: 30,
+			        firstDayOfWeek: 1,
+			        views: ['day', 'week', 'workWeek'],
+        			currentView: 'workWeek',        	
+        			showCurrentTimeIndicator: true,
+        			timeZone: 'Europe/Vienna',
+        			appointmentTemplate: function(data) {
+			            var projectInfo = $.grep(projectList, function(e){ return e.id === data.projectId; })[0];
+			            var activityTypeInfo = $.grep(activityTypeList, function(e){ return e.id === data.activityTypeId; })[0];
+			     
+			            return $("<div>" + 
+			                        "<div>" + projectInfo.name + "</div>" +
+			                        "<div>" + activityTypeInfo.name + "</div>" +
+			                        "<div>" + data.startDate + " - " + data.endDate + "</div>" + 
+			                        "<div><p>" + data.subject + "</p></div>" +
+			                     "</div>"); 
+			     
+			        },
+			        onAppointmentAdded: function(e) {
+			            showToast("Added",e.appointmentData.subject, "success");
+			        },
+			        onAppointmentUpdated: function(e) {
+			            showToast("Updated",e.appointmentData.subject, "info");
+			        },
+			        onAppointmentDeleted: function(e) {
+			            showToast("Deleted",e.appointmentData.subject, "warning");
+			        },
+	                onAppointmentRendered: function (e) {
+	                	if (e !== undefined && e.appointmentData !== undefined)
+	                	{
+				            var activityTypeInfo = $.grep(activityTypeList, function(a){ return a.id === e.appointmentData.activityTypeId; })[0];
+		                    e.appointmentElement[0].style.backgroundColor = activityTypeInfo.color;
+		                }
+	                },
+        			onAppointmentFormCreated: function(data) {
+			            var form = data.form,
+			                startDate = data.appointmentData.startDate;
+			    
+			                form.option("items", [{
+			                    label: {
+			                        text: "Project"
+			                    },
+			                    editorType: "dxSelectBox",
+			                    dataField: "projectId",
+			                    editorOptions: {
+			                        items: projectList,
+			                        displayExpr: "name",
+			                        valueExpr: "id"
+			                    },
+			                }, {
+			                    label: {
+			                        text: "Activity"
+			                    },
+			                    editorType: "dxSelectBox",
+			                    dataField: "activityTypeId",
+			                    editorOptions: {
+			                        items: activityTypeList,
+			                        displayExpr: "name",
+			                        valueExpr: "id"
+			                    },
+			                }, {
+			                    dataField: "startDate",
+			                    editorType: "dxDateBox",
+			                    editorOptions: {
+			                        type: "datetime"
+			                    }
+			                }, {
+			                    name: "endDate",
+			                    dataField: "endDate",
+			                    editorType: "dxDateBox",
+			                    editorOptions: {
+			                        type: "datetime"
+			                    }
+			                }, {
+			                    label: {
+			                        text: "Subject"
+			                    },
+			                    name: "subject",
+			                    dataField: "subject",
+			                    editorType: "dxTextBox"
+			                }, {
+			                    label: {
+			                        text: "Description"
+			                    },
+			                    name: "body",
+			                    dataField: "body",
+			                    editorType: "dxTextArea",
+			                    editorOptions: {
+			                    	height: 120
+			                    }
+			                }]
+			            );
+			        }
+			    }).dxScheduler('instance');
 			});
 		</script>
 		
@@ -52,7 +265,5 @@
             <input type="submit" value="Sign Out"/>
         </form>
         <div id="schCalendar"></div>
-        <br />
-        <div id="buttonContainer"></div>
     </body>
 </html>

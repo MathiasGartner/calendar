@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
     <head>
+    
     	<!-- DevExtreme dependencies -->
 		<script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.3.min.js"></script>
 		<!-- A DevExtreme library -->
@@ -14,7 +15,34 @@
 		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/16.1.14/css/dx.common.css" />
 		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/16.1.14/css/dx.light.css" />
 		
+    	<style type="text/css">
+			.dx-scheduler-date-table-cell, .dx-scheduler-timeline {
+				height: 20px !important;
+			}
+			.dx-scheduler-time-panel-cell {
+				height: 40px !important;
+			}
+			.dx-scheduler-time-panel-row:first-child .dx-scheduler-time-panel-cell {
+			    padding-top: 66px !important;
+			}
+			.wordwrap { 
+			   white-space: pre-wrap;        
+			   white-space: -moz-pre-wrap; 
+			   white-space: -pre-wrap;     
+			   white-space: -o-pre-wrap;   
+			   word-wrap: break-word;      
+			}
+    	</style>
+    	
 		<script type="text/javascript">
+		
+			function getTimeString(d) {
+				var time = "";
+				if (typeof(d) === "string") {
+					time = d.substring(11, 16)
+				}
+				return time;
+			};
 		    
 			function showToast(event, value, type) {
 		        DevExpress.ui.notify(event + " \"" + value + "\"", type, 1400);
@@ -51,8 +79,7 @@
 		    };
 		    
 		    function insertAppointment(appointmentData) {
-		    	alert(appointmentData.startDate);
-				$.ajax({
+		    	$.ajax({
 					async: false,
 					type: 'POST',
 			   		url: 'calendar/appointment/insert',
@@ -156,28 +183,51 @@
 			
 			var scheduler;		
 			$(function() {
+				var isDouble = 0, prevCellData = null;
+				
 			    scheduler = $("#schCalendar").dxScheduler({
 			        dataSource: ds,
 			        currentDate: new Date(),
 			        startDayHour: 8,
 			        endDayHour: 20,
-			        cellDuration: 30,
+			        cellDuration: 15,
 			        firstDayOfWeek: 1,
 			        views: ['day', 'week', 'workWeek'],
-        			currentView: 'workWeek',        	
-        			showCurrentTimeIndicator: true,
+        			currentView: 'week',
+        	        showCurrentTimeIndicator: true,
         			timeZone: 'Europe/Vienna',
         			appointmentTemplate: function(data) {
 			            var projectInfo = $.grep(projectList, function(e){ return e.id === data.projectId; })[0];
 			            var activityTypeInfo = $.grep(activityTypeList, function(e){ return e.id === data.activityTypeId; })[0];
 			     
-			            return $("<div>" + 
-			                        "<div>" + projectInfo.name + "</div>" +
-			                        "<div>" + activityTypeInfo.name + "</div>" +
-			                        "<div>" + data.startDate + " - " + data.endDate + "</div>" + 
-			                        "<div><p>" + data.subject + "</p></div>" +
-			                     "</div>"); 
+			            return $('<div>' + 
+			                        '<div>' + projectInfo.name + '</div>' +
+			                        '<div>' + activityTypeInfo.name + '</div>' +
+			                        '<div>' + getTimeString(data.startDate) + ' - ' + getTimeString(data.endDate) + '</div>' + 
+			                        '<div class="wordwrap" style="margin-top: 10px">' + data.subject + '</div>' +
+			                     '</div>'); 
 			     
+			        },
+					onCellClick: function(e){
+						e.cancel = true; // cancel all default logic
+						if (isDouble == 1) {
+							prevCellData = e.cellData;
+						}
+						isDouble++;
+						setTimeout(function () {
+							if (isDouble == 2) {
+								var focusedCells = e.element.find("td.dx-state-focused");
+								if(focusedCells.length > 0){
+									var cell = focusedCells[0]; // get the first cell;			                         
+									var cdata = $(cell).data("dxCellData") || $($(cell).parents(".dx-item")).data("dxItemData");                     
+									e.component.showAppointmentPopup({ startDate: cdata.startDate, endDate: e.cellData.endDate }, true);
+								}
+							}
+							else if (isDouble == 1)
+								console.log('Click');
+							isDouble = 0;
+							prevCellData = null;
+						}, 300);
 			        },
 			        onAppointmentAdded: function(e) {
 			            showToast("Added",e.appointmentData.subject, "success");
@@ -225,14 +275,14 @@
 			                    dataField: "startDate",
 			                    editorType: "dxDateBox",
 			                    editorOptions: {
-			                        type: "datetime"
+			                        type: "datetime",
 			                    }
 			                }, {
 			                    name: "endDate",
 			                    dataField: "endDate",
 			                    editorType: "dxDateBox",
 			                    editorOptions: {
-			                        type: "datetime"
+			                        type: "datetime",
 			                    }
 			                }, {
 			                    label: {

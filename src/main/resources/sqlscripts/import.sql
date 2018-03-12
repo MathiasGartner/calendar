@@ -7,7 +7,7 @@ INSERT INTO ActivityType(name, color) values ('Web-Recherche', '#ff0011');
 INSERT INTO ActivityType(name, color) values ('Programmieren', '#00aa11');
 INSERT INTO ActivityType(name, color) values ('Besprechung', '#0011ff');
 INSERT INTO ActivityType(name, color) values ('Paper lesen', '#00ff11');
-INSERT INTO ActivityType(name, color) values ('VO besuchen', '#cc0011');
+INSERT INTO ActivityType(name, color) values ('VO besuchen', '#cc5511');
 INSERT INTO ActivityType(name, color) values ('Organisatorisches', '#aa0011');
 
 INSERT INTO Appointment(projectId, activitytypeId, startDate, endDate, subject, body) values (1, 2, '2018-02-27 13:15:00', '2018-02-27 18:05:00', 'git repository für TDVMC projekt einrichten', 'git projekt erstellen, eclipse anbindung, ...');

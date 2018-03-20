@@ -201,10 +201,10 @@
 			            var activityTypeInfo = $.grep(activityTypeList, function(e){ return e.id === data.activityTypeId; })[0];
 			     
 			            return $('<div>' + 
-			                        '<div>' + projectInfo.name + '</div>' +
-			                        '<div>' + activityTypeInfo.name + '</div>' +
-			                        '<div>' + getTimeString(data.startDate) + ' - ' + getTimeString(data.endDate) + '</div>' + 
+			                        '<div class="wordwrap">' + projectInfo.name + ' - ' + activityTypeInfo.name + '</div>' +
+			                        '<div class="wordwrap">' + getTimeString(data.startDate) + ' - ' + getTimeString(data.endDate) + '</div>' + 
 			                        '<div class="wordwrap" style="margin-top: 10px">' + data.subject + '</div>' +
+			                        '<div class="wordwrap" style="margin-top: 10px; font-size: 11px">' + (data.body !== null ? data.body : '') + '</div>' +
 			                     '</div>'); 
 			     
 			        },

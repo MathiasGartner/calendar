@@ -1,5 +1,6 @@
 package at.gartner.calendar.data.viewmodel;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
@@ -81,6 +82,5 @@ public class SchedulerAppointment {
 		this.body = body;
 		this.projectId = projectId;
 		this.activityTypeId = activityTypeId;
-	}
-	
+	}	
 }

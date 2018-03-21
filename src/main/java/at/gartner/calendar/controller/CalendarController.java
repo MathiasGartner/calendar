@@ -1,6 +1,12 @@
 package at.gartner.calendar.controller;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
@@ -25,6 +31,7 @@ import at.gartner.calendar.data.repository.ActivityTypeRepository;
 import at.gartner.calendar.data.repository.AppointmentRepository;
 import at.gartner.calendar.data.repository.ProjectRepository;
 import at.gartner.calendar.data.viewmodel.SchedulerAppointment;
+import at.gartner.calendar.data.viewmodel.WeeklySummaryItem;
 
 @RestController
 @RequestMapping("/calendar")
@@ -75,6 +82,39 @@ public class CalendarController {
 	{
 		appointmentRepository.deleteById(id);
 		return "deleted";
+	}
+
+	@RequestMapping(value = "/loadWeeklySummary/{startDate}")
+	public List<WeeklySummaryItem> LoadWeeklySummary(@PathVariable(name = "startDate") @DateTimeFormat(iso = ISO.DATE_TIME) LocalDateTime startDate)
+	{	
+		//TODO: write custom repository method for fetching only weekly apointments!
+		LocalDateTime monday = startDate;
+	    while (monday.getDayOfWeek() != DayOfWeek.MONDAY)
+	    {
+	      monday = monday.minusDays(1);
+	    }
+
+	    LocalDateTime sunday = startDate;
+	    while (sunday.getDayOfWeek() != DayOfWeek.SUNDAY)
+	    {
+	      sunday = sunday.plusDays(1);
+	    }
+		List<WeeklySummaryItem> items = new ArrayList<>();
+		Iterable<Appointment> appointments = appointmentRepository.findAll();
+		for(Appointment a : appointments)
+		{
+			if (a.getStartDate().toLocalDateTime().isAfter(monday) && a.getEndDate().toLocalDateTime().isBefore(sunday))
+			{
+				items.add(new WeeklySummaryItem(a.getHours(), a.getProject().getName() + " - " + a.getActivityType().getName()));
+			}
+		}
+		Map<String, Double> groupedItems = items.stream().collect(Collectors.groupingBy(i -> i.getDescription(), Collectors.summingDouble(i -> i.getTotalHours())));
+		items.clear();
+		for (Map.Entry<String, Double> gi : groupedItems.entrySet())
+		{
+			items.add(new WeeklySummaryItem(gi.getValue(), gi.getKey()));
+		}
+		return items;
 	}
 
 	@RequestMapping(value = "/testpost", method = RequestMethod.POST)

@@ -1,5 +1,6 @@
 package at.gartner.calendar.data.entity;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
@@ -123,5 +124,11 @@ public class Appointment {
 	public Long getActivityTypeId()
 	{
 		return this.activityType.getId();
+	}
+	
+	public double getHours()
+	{
+		Duration d = Duration.between(this.getEndDate(), this.getStartDate());
+		return -(d.toHours() + (d.toMinutes() % 60) / 60.0);
 	}
 }

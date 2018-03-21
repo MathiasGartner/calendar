@@ -4,26 +4,29 @@
     <head>
     
     	<!-- DevExtreme dependencies -->
-		<script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.3.min.js"></script>
+		<script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.1.0.min.js"></script>
+		<!-- DevExtreme themes -->
+		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/17.2.6/css/dx.common.css" />
+		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/17.2.6/css/dx.light.css" />
 		<!-- A DevExtreme library -->
-		<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.all.js"></script>
-		<!--<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.web.js"></script>-->
-		<!--<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.viz.js"></script>-->
-		<!--<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.viz-web.js"></script>-->
-		<!--<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/16.1.14/js/dx.mobile.js"></script>-->
-		<!-- Styles -->
-		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/16.1.14/css/dx.common.css" />
-		<link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/16.1.14/css/dx.light.css" />
+		<script type="text/javascript" src="https://cdn3.devexpress.com/jslib/17.2.6/js/dx.all.js"></script>
+		<!-- <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/17.2.6/js/dx.mobile.js"></script> -->
+		<!-- <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/17.2.6/js/dx.web.js"></script> -->
+		<!-- <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/17.2.6/js/dx.viz.js"></script> -->
+		<!-- <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/17.2.6/js/dx.viz-web.js"></script> -->
 		
     	<style type="text/css">
 			.dx-scheduler-date-table-cell, .dx-scheduler-timeline {
 				height: 20px !important;
 			}
 			.dx-scheduler-time-panel-cell {
-				height: 40px !important;
+				height: 20px !important;
 			}
 			.dx-scheduler-time-panel-row:first-child .dx-scheduler-time-panel-cell {
-			    padding-top: 66px !important;
+				height: 19px !important;
+			    border-bottom-width: 0px;
+			    padding-top: 0px;
+			    padding-bottom: 0px;
 			}
 			.wordwrap { 
 			   white-space: pre-wrap;        
@@ -170,14 +173,17 @@
 	            insert: function(values) {
 	            	insertAppointment(values);
 	                ds.reload();
+	                dsWeeklySummary.reload();
 	            },			         
 	            update: function(key, values) {
 	            	updateAppointment(key.id, values);
 	                ds.reload();
+	                dsWeeklySummary.reload();
 	            },			         
 	            remove: function(key) {
 	            	deleteAppointment(key.id);
 	                ds.reload();
+	                dsWeeklySummary.reload();
 	            }			         
 	        });
 			
@@ -195,6 +201,7 @@
 			        views: ['day', 'week', 'workWeek'],
         			currentView: 'week',
         	        showCurrentTimeIndicator: true,
+        	        showAllDayPanel: false,
         			timeZone: 'Europe/Vienna',
         			appointmentTemplate: function(data) {
 			            var projectInfo = $.grep(projectList, function(e){ return e.id === data.projectId; })[0];
@@ -207,6 +214,9 @@
 			                        '<div class="wordwrap" style="margin-top: 10px; font-size: 11px">' + (data.body !== null ? data.body : '') + '</div>' +
 			                     '</div>'); 
 			     
+			        },
+			        onContentReady: function(e) {
+		                dsWeeklySummary.reload();
 			        },
 					onCellClick: function(e){
 						e.cancel = true; // cancel all default logic
@@ -306,14 +316,44 @@
 			        }
 			    }).dxScheduler('instance');
 			});
+			
+			var dsWeeklySummary = new DevExpress.data.DataSource({
+			      loadMode: "raw",   
+			      load: function (loadOptions) {
+			          return $.getJSON('calendar/loadWeeklySummary/' + (scheduler !== undefined && scheduler.getStartViewDate() !== undefined ? scheduler.getStartViewDate().toISOString() : new Date().toISOString()));
+			      }
+			});
+			
+			var weeklySummary;		
+			$(function() {
+				weeklySummary = $('#dgvWeeklySummary').dxDataGrid({
+					dataSource: dsWeeklySummary,
+					columns: [
+			            { dataField: 'description', caption: 'Task', sortOrder: "asc" },
+			            { dataField: 'totalHours', caption: 'Hours', format: { type: 'fixedPoint', precision: 1 }, width: '70px' }
+			        ],
+			        summary: {
+			            totalItems: [{
+			                column: "totalHours",
+			                summaryType: "sum",
+		                    customizeText: function(data) {
+		                        return data.value.toFixed(2);
+		                    }
+			            }]
+			        }
+				}).dxDataGrid('instance');
+			});
 		</script>
 		
         <title>calendar</title>
     </head>
     <body>
-    	<form th:action="@{/logout}" method="post">
+    	<!-- <form th:action="@{/logout}" method="post">
             <input type="submit" value="Sign Out"/>
-        </form>
-        <div id="schCalendar"></div>
+        </form> -->
+        <div style="width: 100%">
+        	<div id="schCalendar" style="width: 70%; float: left;"></div>
+        	<div id="dgvWeeklySummary" style="width: 25%; float: left; margin-left: 5px"></div>
+        </div>        
     </body>
 </html>

@@ -51,7 +51,7 @@ public class CalendarController {
 		Iterable<Appointment> appointments = appointmentRepository.findAll();
 		return appointments;
 	}
-	
+		
 	@RequestMapping(value = "/appointment/insert", method = RequestMethod.POST)
 	public ResponseEntity<SchedulerAppointment> InsertAppointment(@RequestBody SchedulerAppointment appointment)
 	{

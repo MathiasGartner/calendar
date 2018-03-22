@@ -3,6 +3,7 @@ package at.gartner.calendar.controller;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,21 +40,21 @@ public class DataController {
 	}
 
 	@RequestMapping(value = "/project/{id}")
-	public Optional<Project> Project(Long id)
+	public Optional<Project> Project(@PathVariable(name = "id") Long id)
 	{
 		Optional<Project> project = projectRepository.findById(id);
 		return project;
 	}
 
 	@RequestMapping(value = "/activityType/{id}")
-	public Optional<ActivityType> ActivityType(Long id)
+	public Optional<ActivityType> ActivityType(@PathVariable(name = "id") Long id)
 	{
 		Optional<ActivityType> activityType = activityTypeRepository.findById(id);
 		return activityType;
 	}
 
 	@RequestMapping(value = "/appointment/{id}")
-	public Optional<Appointment> Appointment(Long id)
+	public Optional<Appointment> Appointment(@PathVariable(name = "id") Long id)
 	{
 		Optional<Appointment> appointment = appointmentRepository.findById(id);
 		return appointment;

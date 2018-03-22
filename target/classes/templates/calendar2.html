@@ -152,6 +152,26 @@
 		        return appointment;
 		    };
 		    
+		    function getTooltipTemplate(data) {
+		        return $(
+		        		'<div class="dx-scheduler-appointment-tooltip dx-popup-content">' +
+			        		'<div class="dx-scheduler-appointment-tooltip-title"></div>' +
+			        		'<div class="dx-scheduler-appointment-tooltip-date">8:30 AM - 10:00 AM</div>' +
+			        		'<div class="dx-scheduler-appointment-tooltip-buttons">' +
+			        			'<div class="dx-button dx-button-normal dx-widget dx-button-has-icon app-popup-delete" role="button" aria-label="trash" tabindex="0">' +
+			        				'<div class="dx-button-content"><i class="dx-icon dx-icon-trash"></i></div>' +
+			        			'</div>' +
+			        			'<div class="dx-button dx-button-normal dx-widget dx-button-has-icon dx-button-has-text app-popup-edit" role="button" aria-label="Open appointment" tabindex="0">' +
+			        				'<div class="dx-button-content"><i class="dx-icon dx-icon-edit"></i><span class="dx-button-text">Open appointment</span></div>' +
+			        			'</div>' +
+			        			'<div class="dx-button dx-button-normal dx-widget dx-button-has-icon dx-button-has-text app-popup-copy" role="button" aria-label="Copy to current time" tabindex="0">' +
+			        				'<div class="dx-button-content"><i class="dx-icon dx-icon-clock"></i><span class="dx-button-text">Copy to current time</span></div>' +
+			        			'</div>' +
+			        		'</div>' +
+		        		'</div>'
+		        );
+		    };
+		    
 			var ds = new DevExpress.data.DataSource({			        	 
 	            load: function(loadOptions) {
 	            	var d;
@@ -214,6 +234,21 @@
 			                        '<div class="wordwrap" style="margin-top: 10px; font-size: 11px">' + (data.body !== null ? data.body : '') + '</div>' +
 			                     '</div>'); 
 			     
+			        },
+			        appointmentTooltipTemplate: function(data, container) {
+			            var markup = getTooltipTemplate(getAppointmentById(data.id));
+			            markup.find(".app-popup-delete").click(function() { scheduler.deleteAppointment(data); scheduler.hideAppointmentTooltip(); });
+			            markup.find(".app-popup-edit").click(function() { scheduler.showAppointmentPopup(data, false); scheduler.hideAppointmentTooltip(); });
+			            markup.find(".app-popup-copy").click(function() { 
+			            	var newAppointment = jQuery.extend(true, {}, data);
+			            	newAppointment.startDate = new Date();
+			            	newAppointment.startDate.setMinutes(Math.round(newAppointment.startDate.getMinutes() / 15) * 15); 
+			            	newAppointment.endDate = new Date(newAppointment.startDate);
+			            	newAppointment.endDate.setHours(newAppointment.startDate.getHours() + 1);
+			            	scheduler.addAppointment(newAppointment);
+			            	scheduler.hideAppointmentTooltip();
+			            });
+			            return markup;
 			        },
 			        onContentReady: function(e) {
 		                dsWeeklySummary.reload();
@@ -330,7 +365,7 @@
 					dataSource: dsWeeklySummary,
 					columns: [
 			            { dataField: 'description', caption: 'Task', sortOrder: "asc" },
-			            { dataField: 'totalHours', caption: 'Hours', format: { type: 'fixedPoint', precision: 1 }, width: '70px' }
+			            { dataField: 'totalHours', caption: 'Hours', format: { type: 'fixedPoint', precision: 2 }, width: '70px' }
 			        ],
 			        summary: {
 			            totalItems: [{

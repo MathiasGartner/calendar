@@ -228,9 +228,9 @@
 			            var activityTypeInfo = $.grep(activityTypeList, function(e){ return e.id === data.activityTypeId; })[0];
 			     
 			            return $('<div>' + 
-			                        '<div class="wordwrap">' + projectInfo.name + ' - ' + activityTypeInfo.name + '</div>' +
-			                        '<div class="wordwrap">' + getTimeString(data.startDate) + ' - ' + getTimeString(data.endDate) + '</div>' + 
-			                        '<div class="wordwrap" style="margin-top: 10px">' + data.subject + '</div>' +
+			                        '<div class="wordwrap" style="font-size: 13px">' + projectInfo.name + ' - ' + activityTypeInfo.name + '</div>' +
+			                        '<div class="wordwrap" style="font-size: 11px">' + getTimeString(data.startDate) + ' - ' + getTimeString(data.endDate) + '</div>' + 
+			                        '<div class="wordwrap" style="margin-top: 10px; font-size: 13px">' + data.subject + '</div>' +
 			                        '<div class="wordwrap" style="margin-top: 10px; font-size: 11px">' + (data.body !== null ? data.body : '') + '</div>' +
 			                     '</div>'); 
 			     
@@ -243,6 +243,8 @@
 			            	var newAppointment = jQuery.extend(true, {}, data);
 			            	newAppointment.startDate = new Date();
 			            	newAppointment.startDate.setMinutes(Math.round(newAppointment.startDate.getMinutes() / 15) * 15); 
+			            	newAppointment.startDate.setSeconds(0); 
+			            	newAppointment.startDate.setMilliseconds(0); 
 			            	newAppointment.endDate = new Date(newAppointment.startDate);
 			            	newAppointment.endDate.setHours(newAppointment.startDate.getHours() + 1);
 			            	scheduler.addAppointment(newAppointment);
@@ -321,6 +323,7 @@
 			                    editorType: "dxDateBox",
 			                    editorOptions: {
 			                        type: "datetime",
+			                        displayFormat: "dd/MM/yyyy HH:mm"
 			                    }
 			                }, {
 			                    name: "endDate",
@@ -328,6 +331,7 @@
 			                    editorType: "dxDateBox",
 			                    editorOptions: {
 			                        type: "datetime",
+			                        displayFormat: "dd/MM/yyyy HH:mm"
 			                    }
 			                }, {
 			                    label: {

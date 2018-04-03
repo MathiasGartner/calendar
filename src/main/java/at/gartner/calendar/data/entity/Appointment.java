@@ -34,6 +34,11 @@ public class Appointment {
 	@JsonBackReference(value="a")
 	private ActivityType activityType;
 
+	@ManyToOne
+    @JoinColumn(name = "userId")
+	@JsonBackReference(value="u")
+	private User user;
+
 	public Long getId() {
         return id;
     }
@@ -90,6 +95,14 @@ public class Appointment {
 		this.activityType = activityType;
 	}
 	
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+	
 	protected Appointment()
 	{
 		
@@ -102,13 +115,14 @@ public class Appointment {
 		this.body = body;
 	}
 
-	public Appointment(ZonedDateTime startDate, ZonedDateTime endDate, String subject, String body, Project project, ActivityType activityType) {
+	public Appointment(ZonedDateTime startDate, ZonedDateTime endDate, String subject, String body, Project project, ActivityType activityType, User user) {
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.subject = subject;
 		this.body = body;
 		this.project = project;
 		this.activityType = activityType;
+		this.user = user;
 	}
 	
 	public Long getProjectId()
@@ -122,6 +136,14 @@ public class Appointment {
 	public Long getActivityTypeId()
 	{
 		return this.activityType.getId();
+	}
+	
+	public Long getUserId()
+	{
+		return this.user.getId();
+	}
+
+	public void setUserId(Long id) {
 	}
 	
 	public double getHours()

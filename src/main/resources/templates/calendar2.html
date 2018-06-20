@@ -16,6 +16,9 @@
 		<!-- <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/17.2.6/js/dx.viz-web.js"></script> -->
 		
     	<style type="text/css">
+    		.mydx-scheduler-colored-working-time-cell {
+    			background-color: rgba(86, 202, 133, 0.1);
+    		}
 			.dx-scheduler-date-table-cell, .dx-scheduler-timeline {
 				height: 20px !important;
 			}
@@ -38,6 +41,10 @@
     	</style>
     	
 		<script type="text/javascript">
+			function isWeekend(date) {
+		        var day = date.getDay();
+		        return day === 0 || day === 6;
+		    };
 		
 			function getTimeString(d) {
 				var time = "";
@@ -223,6 +230,12 @@
         	        showCurrentTimeIndicator: true,
         	        showAllDayPanel: false,
         			timeZone: 'Europe/Vienna',
+        			dataCellTemplate: function(cellData, index, container) {
+        				var hours = cellData.startDate.getHours(); 
+        				if(!isWeekend(cellData.startDate) && hours != 12 && hours > 8 && hours < 17) {
+            				container.addClass("mydx-scheduler-colored-working-time-cell");	
+        				}
+                    },
         			appointmentTemplate: function(data) {
 			            var projectInfo = $.grep(projectList, function(e){ return e.id === data.projectId; })[0];
 			            var activityTypeInfo = $.grep(activityTypeList, function(e){ return e.id === data.activityTypeId; })[0];
